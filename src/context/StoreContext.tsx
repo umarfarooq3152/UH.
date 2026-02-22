@@ -51,31 +51,54 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       } else {
         setProducts(fetchedProducts);
       }
+    }, (error) => {
+      console.warn('Firestore snapshot error (using local products fallback):', error.message);
+      setProducts(ALL_PRODUCTS);
     });
 
     return () => unsubscribe();
   }, []);
 
   const addProduct = async (product: Omit<Product, 'id'>) => {
-    await addDoc(collection(db, 'products'), product);
+    try {
+      await addDoc(collection(db, 'products'), product);
+    } catch (error) {
+      console.warn('Firestore add failed, updating locally:', error);
+      const newProduct = { ...product, id: `local-${Date.now()}` } as Product;
+      setProducts(prev => [...prev, newProduct]);
+    }
   };
 
   const deleteProduct = async (productId: string | number) => {
-    await deleteDoc(doc(db, 'products', String(productId)));
+    try {
+      await deleteDoc(doc(db, 'products', String(productId)));
+    } catch (error) {
+      console.warn('Firestore delete failed, updating locally:', error);
+      setProducts(prev => prev.filter(p => p.id !== productId));
+    }
   };
 
   const updateProduct = async (productId: string, updates: Partial<Product>) => {
-    await updateDoc(doc(db, 'products', productId), updates);
+    try {
+      await updateDoc(doc(db, 'products', productId), updates);
+    } catch (error) {
+      console.warn('Firestore update failed, updating locally:', error);
+      setProducts(prev => prev.map(p => String(p.id) === String(productId) ? { ...p, ...updates } : p));
+    }
   };
 
   const seedDatabase = async () => {
-    const batch = writeBatch(db);
-    ALL_PRODUCTS.forEach(product => {
-      const newDocRef = doc(collection(db, 'products'));
-      const { id, ...data } = product;
-      batch.set(newDocRef, data);
-    });
-    await batch.commit();
+    try {
+      const batch = writeBatch(db);
+      ALL_PRODUCTS.forEach(product => {
+        const newDocRef = doc(collection(db, 'products'));
+        const { id, ...data } = product;
+        batch.set(newDocRef, data);
+      });
+      await batch.commit();
+    } catch (error) {
+      console.warn('Firestore seed failed:', error);
+    }
   };
 
   const filteredProducts = useMemo(() => {

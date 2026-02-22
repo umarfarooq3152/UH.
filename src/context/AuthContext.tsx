@@ -69,7 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const isAdmin = profile?.isAdmin || false;
+  const isAdmin = (user?.email === import.meta.env.VITE_ADMIN_USER) || profile?.id === 'admin-local';
 
   const loginAsAdmin = () => {
     setUser({ uid: 'admin-local', displayName: 'System Admin', email: import.meta.env.VITE_ADMIN_USER } as any);

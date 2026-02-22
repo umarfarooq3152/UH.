@@ -3,7 +3,7 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
-import { HashRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   ArrowRight,
   Menu,
@@ -69,8 +69,22 @@ const Navbar = () => {
   const { setAuthModalOpen, user, isAdmin } = useAuth();
   const { toggleCart, cart } = useStore();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
+
+  const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, hash: string) => {
+    e.preventDefault();
+    if (location.pathname !== '/') {
+      navigate(`/${hash}`);
+    } else {
+      const element = document.querySelector(hash);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+    setMobileMenuOpen(false);
+  };
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -87,13 +101,13 @@ const Navbar = () => {
         )}>
           <Link to="/" className="text-white font-bold tracking-tighter text-xl">UH.</Link>
           <div className="hidden md:flex items-center gap-8 text-[11px] uppercase tracking-[0.2em] font-medium text-white/60">
-            <a href="#gallery" className="hover:text-white transition-colors">Gallery</a>
+            <a href="#gallery" onClick={(e) => handleScrollTo(e, '#gallery')} className="hover:text-white transition-colors cursor-pointer">Gallery</a>
             <Link to="/archive" className="hover:text-white transition-colors">Archive</Link>
-            <a href="#process" className="hover:text-white transition-colors">Process</a>
+            <a href="#process" onClick={(e) => handleScrollTo(e, '#process')} className="hover:text-white transition-colors cursor-pointer">Process</a>
           </div>
 
           <div className="flex items-center gap-3 md:gap-6">
-            {user && (
+            {isAdmin && (
               <Link to="/admin" className="text-white/60 hover:text-white transition-colors p-2" title="Admin Dashboard">
                 <Layers size={18} />
               </Link>
@@ -143,9 +157,9 @@ const Navbar = () => {
               <X size={24} />
             </button>
             <div className="flex flex-col gap-8 text-3xl font-serif italic text-white/80 mt-12">
-              <a href="#gallery" onClick={() => setMobileMenuOpen(false)}>Gallery</a>
+              <a href="#gallery" onClick={(e) => handleScrollTo(e, '#gallery')} className="cursor-pointer">Gallery</a>
               <Link to="/archive" onClick={() => setMobileMenuOpen(false)}>Archive</Link>
-              <a href="#process" onClick={() => setMobileMenuOpen(false)}>Process</a>
+              <a href="#process" onClick={(e) => handleScrollTo(e, '#process')} className="cursor-pointer">Process</a>
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
@@ -473,7 +487,7 @@ const ArchiveStep: React.FC<{ step: typeof WORKFLOW[0] }> = ({ step }) => {
 
 const StickyStackingArchive = () => {
   return (
-    <section id="process" className="bg-obsidian">
+    <section id="process" className="relative bg-obsidian">
       {WORKFLOW.map((step) => (
         <ArchiveStep key={step.id} step={step} />
       ))}
@@ -789,6 +803,21 @@ const Footer = () => {
 };
 
 const Home = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash) {
+      const element = document.querySelector(location.hash);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [location]);
+
   return (
     <>
       <Hero />

@@ -4,6 +4,8 @@ import { ArrowLeft, CreditCard, ShieldCheck, Loader2, CheckCircle } from 'lucide
 import { useStore } from '../context/StoreContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import emailjs from '@emailjs/browser';
+import { useToast } from '../context/ToastContext';
 
 const Checkout: React.FC = () => {
   const { cart, cartTotal, clearCart } = useStore();
@@ -12,10 +14,36 @@ const Checkout: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isOrdered, setIsOrdered] = useState(false);
 
+  const { addToast } = useToast();
+
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    try {
+      // Create a summary text of the order
+      const orderSummary = cart.map(item => `${item.quantity}x ${item.product.name} ($${item.product.price})`).join('\n');
+
+      const templateParams = {
+        to_name: 'Umar Farooq',
+        from_name: profile?.full_name || user?.email || 'Guest Patron',
+        message: `A new order has been placed!\n\nCustomer Email: ${user?.email || 'Guest'}\nOrder Total: $${cartTotal}\n\nItems:\n${orderSummary}`,
+        reply_to: user?.email || '',
+      };
+
+      // NOTE: Replace "YOUR_TEMPLATE_ID" and "YOUR_PUBLIC_KEY" with your actual EmailJS template ID and public key.
+      await emailjs.send(
+        'service_xaf5ja8',
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_placeholder',
+        templateParams,
+        import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'public_key_placeholder'
+      );
+    } catch (error) {
+      console.error('Email JS error:', error);
+      // We still process the order visually even if email fails to avoid blocking the user
+      // But we can inform the user quietly
+    }
+
     setIsProcessing(false);
     setIsOrdered(true);
     setTimeout(() => {
@@ -48,7 +76,7 @@ const Checkout: React.FC = () => {
     <div className="min-h-screen bg-obsidian text-white pt-32 pb-24 px-6">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-16">
         <div className="lg:col-span-7 space-y-12">
-          <button 
+          <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-3 text-[10px] uppercase tracking-widest text-white/40 hover:text-white transition-colors"
           >
@@ -57,7 +85,7 @@ const Checkout: React.FC = () => {
 
           <section className="space-y-8">
             <h2 className="text-3xl font-serif italic border-b border-white/10 pb-6">Finalize Acquisition</h2>
-            
+
             <form onSubmit={handlePlaceOrder} className="space-y-10">
               <div className="space-y-6">
                 <h3 className="text-[10px] uppercase tracking-[0.4em] font-bold text-white/40">Shipping Destination</h3>
@@ -79,15 +107,33 @@ const Checkout: React.FC = () => {
 
               <div className="space-y-6">
                 <h3 className="text-[10px] uppercase tracking-[0.4em] font-bold text-white/40">Payment Protocol</h3>
-                <div className="p-6 border border-white/10 bg-white/5 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
+                <div className="p-6 border border-white/10 bg-white/5 space-y-4">
+                  <div className="flex items-center gap-4 border-b border-white/10 pb-4">
                     <CreditCard size={20} className="text-white/40" />
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-widest">Secure Gateway</p>
-                      <p className="text-[10px] text-white/40 uppercase tracking-widest mt-1">Encrypted Transaction Active</p>
+                    <div className="flex-1">
+                      <p className="text-xs font-bold uppercase tracking-widest">Bank Transfer</p>
+                      <p className="text-[10px] text-white/40 uppercase tracking-widest mt-1">Please transfer to the following account</p>
                     </div>
                   </div>
-                  <ShieldCheck size={20} className="text-white/20" />
+
+                  <div className="text-[10px] uppercase tracking-widest text-white/60 space-y-2 pt-2">
+                    <div className="flex justify-between">
+                      <span>Account Title:</span>
+                      <span className="text-white font-bold text-right">UMAR FAROOQ</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Bank:</span>
+                      <span className="text-white font-bold text-right">Meezan Bank-THOKARNIAZBAIG-LHR</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Account Number:</span>
+                      <span className="text-white font-bold text-right tracking-wider">02240109616062</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>IBAN:</span>
+                      <span className="text-white font-bold text-right tracking-wider">PK95MEZN0002240109616062</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -96,7 +142,7 @@ const Checkout: React.FC = () => {
                 disabled={isProcessing || cart.length === 0}
                 className="w-full bg-white text-obsidian py-6 text-[10px] font-bold uppercase tracking-[0.4em] flex items-center justify-center gap-3 hover:bg-white/90 transition-all active:scale-[0.98] disabled:opacity-50"
               >
-                {isProcessing ? <Loader2 className="animate-spin w-5 h-5" /> : `Authorize Payment — $${cartTotal.toLocaleString()}`}
+                {isProcessing ? <Loader2 className="animate-spin w-5 h-5" /> : `Confirm Payment Sent — $${cartTotal.toLocaleString()}`}
               </button>
             </form>
           </section>
@@ -105,7 +151,7 @@ const Checkout: React.FC = () => {
         <div className="lg:col-span-5">
           <div className="sticky top-32 bg-white/5 border border-white/10 p-10 space-y-10">
             <h3 className="text-[10px] uppercase tracking-[0.4em] font-bold text-white/40 border-b border-white/5 pb-4">Acquisition Summary</h3>
-            
+
             <div className="space-y-6 max-h-96 overflow-y-auto no-scrollbar">
               {cart.map((item) => (
                 <div key={item.product.id} className="flex gap-4">

@@ -35,25 +35,14 @@ const AuthModal: React.FC = () => {
           await createUserWithEmailAndPassword(auth, email, password);
           addToast('Profile initialized successfully.', 'success');
         } catch (err: any) {
-          if (err.message.includes('400') || err.message.includes('API key') || err.message.includes('auth/')) {
-            // Mock local login if firebase isn't configured
-            loginAsAdmin();
-            addToast('Mock profile initialized (Demo mode).', 'success');
-          } else {
-            throw err;
-          }
+          throw err;
         }
       } else {
         try {
           await signInWithEmailAndPassword(auth, email, password);
           addToast('Access granted.', 'success');
         } catch (err: any) {
-          if (err.message.includes('400') || err.message.includes('API key') || err.message.includes('auth/')) {
-            loginAsAdmin();
-            addToast('Mock access granted (Demo mode).', 'success');
-          } else {
-            throw err;
-          }
+          throw err;
         }
       }
       setAuthModalOpen(false);

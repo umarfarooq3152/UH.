@@ -14,7 +14,7 @@ const Admin = () => {
   const { products, addProduct, updateProduct, deleteProduct, seedDatabase } = useStore();
   const { addToast } = useToast();
   const navigate = useNavigate();
-  
+
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -23,7 +23,7 @@ const Admin = () => {
     isOpen: false,
     productId: null
   });
-  
+
   // Form State
   const [formData, setFormData] = useState<Partial<Product>>({
     name: '',
@@ -36,10 +36,10 @@ const Admin = () => {
 
   // Redirect if not admin
   useEffect(() => {
-    if (!user) {
+    if (!isAdmin) {
       navigate('/');
     }
-  }, [user, navigate]);
+  }, [isAdmin, navigate]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -141,7 +141,7 @@ const Admin = () => {
     <div className="min-h-screen bg-obsidian pt-32 pb-12 px-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <button 
+          <button
             onClick={() => navigate('/')}
             className="flex items-center gap-2 text-white/60 hover:text-white transition-colors text-xs uppercase tracking-widest"
           >
@@ -155,7 +155,7 @@ const Admin = () => {
             <p className="text-white/40 text-sm">Manage your collection and archive.</p>
           </div>
           <div className="flex gap-4">
-            <button 
+            <button
               onClick={handleSeedDatabase}
               disabled={processing}
               className="flex items-center gap-2 border border-white/20 text-white px-6 py-3 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-white/10 transition-colors disabled:opacity-50"
@@ -163,7 +163,7 @@ const Admin = () => {
               {processing ? <Loader className="animate-spin" size={16} /> : <Database size={16} />}
               Initialize DB
             </button>
-            <button 
+            <button
               onClick={() => {
                 setIsAdding(!isAdding);
                 setIsEditing(null);
@@ -194,7 +194,7 @@ const Admin = () => {
         )}
 
         {isAdding && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-white/5 border border-white/10 rounded-2xl p-8 mb-12"
@@ -204,39 +204,39 @@ const Admin = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-widest text-white/40">Title</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={formData.name}
-                    onChange={e => setFormData({...formData, name: e.target.value})}
+                    onChange={e => setFormData({ ...formData, name: e.target.value })}
                     className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-white/40"
                     placeholder="e.g. Echoes of Silence"
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-widest text-white/40">Category</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={formData.category}
-                    onChange={e => setFormData({...formData, category: e.target.value})}
+                    onChange={e => setFormData({ ...formData, category: e.target.value })}
                     className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-white/40"
                     placeholder="e.g. Thuluth"
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-widest text-white/40">Price ($)</label>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     value={formData.price}
-                    onChange={e => setFormData({...formData, price: Number(e.target.value)})}
+                    onChange={e => setFormData({ ...formData, price: Number(e.target.value) })}
                     className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-white/40"
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-widest text-white/40">Tags (comma separated)</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={formData.tags?.join(', ')}
-                    onChange={e => setFormData({...formData, tags: e.target.value.split(',').map(t => t.trim())})}
+                    onChange={e => setFormData({ ...formData, tags: e.target.value.split(',').map(t => t.trim()) })}
                     className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-white/40"
                     placeholder="modern, ink, abstract"
                   />
@@ -245,9 +245,9 @@ const Admin = () => {
 
               <div className="space-y-2">
                 <label className="text-xs uppercase tracking-widest text-white/40">Description</label>
-                <textarea 
+                <textarea
                   value={formData.description}
-                  onChange={e => setFormData({...formData, description: e.target.value})}
+                  onChange={e => setFormData({ ...formData, description: e.target.value })}
                   className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-white/40 h-32"
                 />
               </div>
@@ -267,8 +267,8 @@ const Admin = () => {
               </div>
 
               <div className="flex justify-end pt-4">
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={uploading}
                   className="flex items-center gap-2 bg-white text-obsidian px-8 py-3 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-white/90 transition-colors disabled:opacity-50"
                 >
@@ -286,13 +286,13 @@ const Admin = () => {
               <div className="aspect-[4/5] relative">
                 <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                  <button 
+                  <button
                     onClick={() => startEdit(product)}
                     className="p-3 bg-white text-obsidian rounded-full hover:scale-110 transition-transform"
                   >
                     <Edit2 size={18} />
                   </button>
-                  <button 
+                  <button
                     onClick={() => handleDelete(product.id as string)}
                     className="p-3 bg-red-500 text-white rounded-full hover:scale-110 transition-transform"
                   >
@@ -315,7 +315,7 @@ const Admin = () => {
         {/* Delete Confirmation Modal */}
         {deleteConfirmation.isOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               className="bg-obsidian border border-white/10 rounded-2xl p-8 max-w-md w-full shadow-2xl"
@@ -325,13 +325,13 @@ const Admin = () => {
                 Are you sure you want to permanently delete this artwork? This action cannot be undone.
               </p>
               <div className="flex justify-end gap-4">
-                <button 
+                <button
                   onClick={() => setDeleteConfirmation({ isOpen: false, productId: null })}
                   className="px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest text-white hover:bg-white/10 transition-colors"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   onClick={confirmDelete}
                   className="px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest bg-red-500 text-white hover:bg-red-600 transition-colors"
                 >
