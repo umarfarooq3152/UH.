@@ -29,15 +29,13 @@ import ChatBot from './components/ChatBot';
 import Profile from './pages/Profile';
 import Checkout from './pages/Checkout';
 import Archive from './pages/Archive';
+import ProductDetails from './pages/ProductDetails';
 import { Product as ProductType } from './types';
-import { ALL_PRODUCTS } from './data/products';
 import Admin from './pages/Admin';
 
 gsap.registerPlugin(ScrollTrigger);
 
 // --- Constants ---
-const PRODUCTS = ALL_PRODUCTS.slice(0, 4);
-const EXHIBITION_WORKS = ALL_PRODUCTS.slice(4, 14);
 
 const WORKFLOW = [
   {
@@ -296,10 +294,10 @@ const Hero = () => {
           </motion.div>
 
           <h1 className="flex flex-col items-center">
-            <span className="hero-text text-4xl md:text-6xl font-light tracking-tight text-white/80 mb-2">
+            <span className="hero-text text-2xl md:text-3xl font-light tracking-tight text-white/80 mb-2">
               Script meets
             </span>
-            <span className="hero-text text-7xl md:text-[12vw] font-serif italic font-black leading-[0.85] text-white">
+            <span className="hero-text text-4xl md:text-[10vw] font-serif italic font-black leading-[0.85] text-white">
               Precision.
             </span>
           </h1>
@@ -323,9 +321,11 @@ const Hero = () => {
 
 const DiagnosticShuffler = () => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const { addToCart } = useStore();
+  const { addToCart, products } = useStore();
+  const PRODUCTS = products.slice(0, 4);
 
   useEffect(() => {
+    if (PRODUCTS.length === 0) return;
     const interval = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % PRODUCTS.length);
     }, 5000);
@@ -405,21 +405,23 @@ const DiagnosticShuffler = () => {
 
         <div className="lg:col-span-7 relative aspect-[4/5] overflow-hidden rounded-2xl bg-silver-slate/20">
           <AnimatePresence mode="wait">
-            <motion.img
-              key={activeIndex}
-              src={PRODUCTS[activeIndex].image_url}
-              alt={PRODUCTS[activeIndex].name}
-              initial={{ scale: 1.1, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-              className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000"
-              referrerPolicy="no-referrer"
-            />
+            {PRODUCTS[activeIndex] && (
+              <motion.img
+                key={activeIndex}
+                src={PRODUCTS[activeIndex].image_url}
+                alt={PRODUCTS[activeIndex].name}
+                initial={{ scale: 1.1, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                className="w-full h-full object-cover grayscale-0 hover:grayscale transition-all duration-1000"
+                referrerPolicy="no-referrer"
+              />
+            )}
           </AnimatePresence>
           <div className="absolute bottom-8 left-8 flex items-center gap-4">
             <div className="glass-pill px-4 py-2 text-[10px] uppercase tracking-widest font-bold">
-              {PRODUCTS[activeIndex].category}
+              {PRODUCTS[activeIndex]?.category || 'Artwork'}
             </div>
           </div>
         </div>
@@ -517,98 +519,68 @@ const ValueProps = () => {
   );
 };
 
-const EXHIBITION_VIDEOS = [
-  "https://cdn.pixabay.com/video/2020/11/07/55718-503971825_large.mp4",
-  "https://cdn.pixabay.com/video/2019/12/12/30121-380473626_large.mp4",
-  "https://cdn.pixabay.com/video/2020/05/06/38270-415950888_large.mp4",
-  "https://cdn.pixabay.com/video/2024/03/03/202813-918944372_large.mp4",
-  "https://cdn.pixabay.com/video/2025/10/12/309451_large.mp4",
-  "https://cdn.pixabay.com/video/2025/01/14/252568_large.mp4",
-  "https://cdn.pixabay.com/video/2023/01/14/146516-789534060_large.mp4",
-  "https://cdn.pixabay.com/video/2026/01/28/330874_large.mp4",
-  "https://cdn.pixabay.com/video/2024/09/04/229685_large.mp4",
-  "https://cdn.pixabay.com/video/2025/03/23/266920_large.mp4"
-];
-
-const VideoCard = ({
-  videoSrc,
-  imageSrc,
-  className,
-  children,
-  autoPlay = false
-}: {
-  videoSrc: string,
-  imageSrc?: string,
+const ImageCard: React.FC<{
+  art: ProductType,
   className?: string,
-  children?: React.ReactNode,
-  autoPlay?: boolean
+  children?: React.ReactNode
+}> = ({
+  art,
+  className,
+  children
 }) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const validImages = art.images?.length ? art.images : [art.image_url];
+    const navigate = useNavigate();
 
-  const handleMouseEnter = () => {
-    setIsHovered(true);
-    if (videoRef.current) {
-      const playPromise = videoRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // Auto-play was prevented
-        });
+    useEffect(() => {
+      let interval: NodeJS.Timeout;
+      if (isHovered && validImages.length > 1) {
+        interval = setInterval(() => {
+          setCurrentIndex((prev) => (prev + 1) % validImages.length);
+        }, 1500);
+      } else {
+        setCurrentIndex(0);
       }
-    }
+      return () => clearInterval(interval);
+    }, [isHovered, validImages.length]);
+
+    return (
+      <div
+        className={cn("overflow-hidden bg-obsidian cursor-pointer relative", className)}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={() => navigate(`/product/${art.id}`)}
+      >
+        <div className="absolute inset-0 w-full h-full">
+          {validImages.map((src, idx) => (
+            <img
+              key={`${src}-${idx}`}
+              src={src}
+              alt={art.name}
+              className={cn(
+                "absolute inset-0 w-full h-full object-cover transition-all duration-1000 will-change-transform",
+                isHovered ? "scale-110" : "scale-100",
+                idx === currentIndex ? "opacity-100 z-10" : "opacity-0 z-0"
+              )}
+              referrerPolicy="no-referrer"
+              loading="lazy"
+            />
+          ))}
+        </div>
+        {children}
+      </div>
+    );
   };
 
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-    if (videoRef.current) {
-      videoRef.current.pause();
-      videoRef.current.currentTime = 0;
-    }
-  };
-
-  return (
-    <div
-      className={cn("overflow-hidden bg-obsidian", className)}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      {imageSrc && (
-        <img
-          src={imageSrc}
-          alt="Thumbnail"
-          className={cn(
-            "absolute inset-0 w-full h-full object-cover transition-transform duration-700 will-change-transform",
-            isHovered ? "scale-105" : "scale-100"
-          )}
-          referrerPolicy="no-referrer"
-          loading="lazy"
-        />
-      )}
-      <video
-        ref={videoRef}
-        src={videoSrc}
-        muted
-        loop
-        playsInline
-        preload="none"
-        onLoadedData={() => setIsLoaded(true)}
-        className={cn(
-          "absolute inset-0 w-full h-full object-cover transition-opacity duration-700",
-          (isHovered || autoPlay) && isLoaded ? "opacity-100" : "opacity-0"
-        )}
-      />
-      {children}
-    </div>
-  );
-};
 
 const ArtExhibition = () => {
   const [viewState, setViewState] = useState<'featured' | 'slices'>('featured');
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
-  const { addToCart } = useStore();
+  const { addToCart, products } = useStore();
+  const EXHIBITION_WORKS = products;
 
-  const currentWork = hoverIndex !== null ? EXHIBITION_WORKS[hoverIndex] : { name: "Featured Art", category: "Explore the curated collection" };
+  const currentWork = (hoverIndex !== null && EXHIBITION_WORKS[hoverIndex]) ? EXHIBITION_WORKS[hoverIndex] : { name: "Featured Art", category: "Explore the curated collection" };
 
   return (
     <section className="py-48 px-6 bg-obsidian overflow-hidden min-h-screen flex flex-col items-center justify-center">
@@ -653,17 +625,16 @@ const ArtExhibition = () => {
               onMouseLeave={() => setHoverIndex(null)}
             >
               {EXHIBITION_WORKS.map((work, idx) => (
-                <VideoCard
+                <ImageCard
                   key={idx}
-                  videoSrc={EXHIBITION_VIDEOS[idx]}
-                  imageSrc={work.image_url}
+                  art={work}
                   className="hero-panel group relative"
                 >
                   <div
-                    className="absolute inset-0 z-10"
+                    className="absolute inset-0 z-20"
                     onMouseEnter={() => setHoverIndex(idx)}
                   />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-obsidian/40 backdrop-blur-[2px] z-20 pointer-events-none">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-transparent z-30 pointer-events-none">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -674,7 +645,7 @@ const ArtExhibition = () => {
                       Acquire Piece
                     </button>
                   </div>
-                </VideoCard>
+                </ImageCard>
               ))}
             </motion.div>
           ) : (
@@ -686,7 +657,7 @@ const ArtExhibition = () => {
               transition={{ duration: 1 }}
               className="slice-gallery"
             >
-              {[0, 1, 2, 3, 4, 5].map((i) => (
+              {EXHIBITION_WORKS.slice(0, 6).map((work, i) => (
                 <motion.div
                   key={i}
                   initial={{ opacity: 0, y: 40, scale: 0.95 }}
@@ -704,11 +675,10 @@ const ArtExhibition = () => {
                     scale: 1.02,
                     transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
                   }}
-                  className="slice-panel group cursor-pointer relative overflow-hidden"
-                  onClick={() => i !== 4 && addToCart(EXHIBITION_WORKS[i])}
+                  className="slice-panel group relative overflow-hidden"
                 >
                   {i === 4 ? (
-                    <div className="w-full h-full bg-white transition-colors duration-700 group-hover:bg-white/90">
+                    <div className="w-full h-full bg-white transition-colors duration-700 group-hover:bg-white/90 cursor-pointer" onClick={() => window.location.href = `#/product/${work.id}`}>
                       <div className="flex flex-col items-center justify-center h-full">
                         <h2 className="enchanted-title text-obsidian">Enchanted</h2>
                         <div className="mt-12 flex flex-col items-center text-center">
@@ -720,25 +690,24 @@ const ArtExhibition = () => {
                       </div>
                     </div>
                   ) : (
-                    <VideoCard
-                      videoSrc={EXHIBITION_VIDEOS[i]}
-                      imageSrc={EXHIBITION_WORKS[i].image_url}
+                    <ImageCard
+                      art={work}
                       className="w-full h-full"
                     >
                       {i === 0 && (
-                        <div className="song-tab z-20">
+                        <div className="song-tab z-30">
                           <span className="tab-text">Sacred Geometry</span>
                           <Zap className="w-4 h-4" />
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-obsidian/20 group-hover:bg-transparent transition-colors duration-700 z-10" />
+                      <div className="absolute inset-0 bg-obsidian/20 group-hover:bg-transparent transition-colors duration-700 z-20 pointer-events-none" />
 
-                      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-30 pointer-events-none">
                         <span className="bg-white text-obsidian px-4 py-2 text-[8px] font-bold uppercase tracking-widest rounded-full whitespace-nowrap">
-                          Add to Bag — ${EXHIBITION_WORKS[i].price}
+                          {work.name} — ${work.price}
                         </span>
                       </div>
-                    </VideoCard>
+                    </ImageCard>
                   )}
                 </motion.div>
               ))}
@@ -862,6 +831,7 @@ export default function App() {
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/archive" element={<Archive />} />
+                <Route path="/product/:id" element={<ProductDetails />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/admin" element={<Admin />} />

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, Filter, Plus, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
@@ -6,6 +6,86 @@ import { useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { Product as ProductType } from '../types';
 import { ALL_PRODUCTS } from '../data/products';
+
+const ProductCard: React.FC<{ art: ProductType, addToCart: (product: ProductType) => void }> = ({ art, addToCart }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const validImages = art.images?.length ? art.images : [art.image_url];
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isHovered && validImages.length > 1) {
+      interval = setInterval(() => {
+        setCurrentIndex((prev) => (prev + 1) % validImages.length);
+      }, 1500);
+    } else {
+      setCurrentIndex(0);
+    }
+    return () => clearInterval(interval);
+  }, [isHovered, validImages.length]);
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="group space-y-6"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div
+        className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-white/5 cursor-pointer"
+        onClick={() => navigate(`/product/${art.id}`)}
+      >
+        <div className="absolute inset-0 w-full h-full">
+          {validImages.map((src, idx) => (
+            <img
+              key={`${src}-${idx}`}
+              src={src}
+              alt={art.name}
+              className={cn(
+                "absolute inset-0 w-full h-full object-cover grayscale-0 group-hover:grayscale group-hover:scale-110 transition-all duration-1000 ease-out",
+                idx === currentIndex ? "opacity-100 z-10" : "opacity-0 z-0"
+              )}
+              referrerPolicy="no-referrer"
+            />
+          ))}
+        </div>
+        <div className="absolute inset-0 bg-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center z-20 pointer-events-none">
+          <button
+            onClick={(e) => { e.stopPropagation(); addToCart(art); }}
+            className="bg-white text-obsidian px-8 py-4 rounded-full text-[10px] font-bold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-3 pointer-events-auto"
+          >
+            <Plus size={14} /> Add to Bag
+          </button>
+        </div>
+        <div className="absolute top-4 right-4 z-30">
+          <span className="bg-obsidian/60 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full text-[10px] font-bold text-white">
+            ${art.price.toLocaleString()}
+          </span>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <div className="flex justify-between items-start">
+          <h3
+            className="text-lg font-medium tracking-tight group-hover:text-white transition-colors cursor-pointer"
+            onClick={() => navigate(`/product/${art.id}`)}
+          >
+            {art.name}
+          </h3>
+        </div>
+        <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold">{art.category}</p>
+        <p className="text-xs text-white/30 line-clamp-2 leading-relaxed font-light">
+          {art.description}
+        </p>
+      </div>
+    </motion.div>
+  );
+};
 
 const Archive: React.FC = () => {
   const { addToCart, searchQuery, setSearchQuery, selectedCategory, setSelectedCategory, filteredProducts: filteredArt } = useStore();
@@ -21,7 +101,7 @@ const Archive: React.FC = () => {
       <div className="max-w-7xl mx-auto space-y-16">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
           <div className="space-y-4">
-            <button 
+            <button
               onClick={() => navigate('/')}
               className="flex items-center gap-3 text-[10px] uppercase tracking-widest text-white/40 hover:text-white transition-colors"
             >
@@ -36,7 +116,7 @@ const Archive: React.FC = () => {
           <div className="w-full md:w-auto flex flex-col sm:flex-row gap-4">
             <div className="relative group">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-white transition-colors" />
-              <input 
+              <input
                 type="text"
                 placeholder="Search the archive..."
                 value={searchQuery}
@@ -45,7 +125,7 @@ const Archive: React.FC = () => {
               />
             </div>
             <div className="relative">
-              <select 
+              <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 className="appearance-none bg-white/5 border border-white/10 px-8 py-4 rounded-full outline-none focus:border-white/30 transition-all w-full md:w-auto text-[10px] font-bold uppercase tracking-widest cursor-pointer"
@@ -61,48 +141,8 @@ const Archive: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-16">
           <AnimatePresence mode="popLayout">
-            {filteredArt.map((art, idx) => (
-              <motion.div
-                layout
-                key={art.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.6, delay: idx * 0.05, ease: [0.22, 1, 0.36, 1] }}
-                className="group space-y-6"
-              >
-                <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-white/5">
-                  <img 
-                    src={art.image_url} 
-                    alt={art.name} 
-                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000 ease-out"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div className="absolute inset-0 bg-obsidian/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center backdrop-blur-[2px]">
-                    <button 
-                      onClick={() => addToCart(art)}
-                      className="bg-white text-obsidian px-8 py-4 rounded-full text-[10px] font-bold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
-                    >
-                      <Plus size={14} /> Add to Bag
-                    </button>
-                  </div>
-                  <div className="absolute top-4 right-4">
-                    <span className="bg-obsidian/60 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full text-[10px] font-bold text-white">
-                      ${art.price.toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-lg font-medium tracking-tight group-hover:text-white transition-colors">{art.name}</h3>
-                  </div>
-                  <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold">{art.category}</p>
-                  <p className="text-xs text-white/30 line-clamp-2 leading-relaxed font-light">
-                    {art.description}
-                  </p>
-                </div>
-              </motion.div>
+            {filteredArt.map((art) => (
+              <ProductCard key={art.id} art={art} addToCart={addToCart} />
             ))}
           </AnimatePresence>
         </div>
@@ -111,7 +151,7 @@ const Archive: React.FC = () => {
           <div className="py-32 text-center space-y-6 opacity-30">
             <Search size={48} strokeWidth={1} className="mx-auto" />
             <p className="text-xl font-serif italic">No matches found in the archive</p>
-            <button 
+            <button
               onClick={() => { setSearchQuery(''); setSelectedCategory('All'); }}
               className="text-[10px] uppercase tracking-widest font-bold underline underline-offset-8 hover:text-white transition-colors"
             >
