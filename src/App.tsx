@@ -32,6 +32,7 @@ import Archive from './pages/Archive';
 import ProductDetails from './pages/ProductDetails';
 import { Product as ProductType } from './types';
 import Admin from './pages/Admin';
+import PageLoader from './components/PageLoader';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -851,7 +852,38 @@ const Home = () => {
   );
 };
 
+// Number of initial hero frames to preload before dismissing the loader
+const PRELOAD_FRAME_COUNT = 30;
+
 export default function App() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+
+  // Preload the first N hero frames to give the canvas a head-start
+  useEffect(() => {
+    let loadedCount = 0;
+    const total = PRELOAD_FRAME_COUNT;
+
+    // Simulate progress to 10% immediately so the bar feels alive
+    setLoadingProgress(10);
+
+    for (let i = 1; i <= total; i++) {
+      const img = new Image();
+      img.src = `/cali/ezgif-frame-${String(i).padStart(3, '0')}.jpg`;
+      const onDone = () => {
+        loadedCount++;
+        // Scale real progress from 10% to 100%
+        setLoadingProgress(10 + (loadedCount / total) * 90);
+        if (loadedCount === total) {
+          // Small grace delay so the bar completes visually before fade-out
+          setTimeout(() => setIsLoading(false), 350);
+        }
+      };
+      img.onload = onDone;
+      img.onerror = onDone;
+    }
+  }, []);
+
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
@@ -871,32 +903,35 @@ export default function App() {
   }, []);
 
   return (
-    <Router>
-      <AuthProvider>
-        <StoreProvider>
-          <ToastProvider>
-            <main className="relative bg-obsidian text-white selection:bg-white selection:text-obsidian">
-              <div className="noise-overlay" />
-              <Navbar />
+    <>
+      <PageLoader isLoading={isLoading} progress={loadingProgress} />
+      <Router>
+        <AuthProvider>
+          <StoreProvider>
+            <ToastProvider>
+              <main className="relative bg-obsidian text-white selection:bg-white selection:text-obsidian">
+                <div className="noise-overlay" />
+                <Navbar />
 
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/archive" element={<Archive />} />
-                <Route path="/product/:id" element={<ProductDetails />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/admin" element={<Admin />} />
-              </Routes>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/archive" element={<Archive />} />
+                  <Route path="/product/:id" element={<ProductDetails />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/admin" element={<Admin />} />
+                </Routes>
 
-              <Footer />
+                <Footer />
 
-              <AuthModal />
-              <CartSidebar />
-              <ChatBot />
-            </main>
-          </ToastProvider>
-        </StoreProvider>
-      </AuthProvider>
-    </Router>
+                <AuthModal />
+                <CartSidebar />
+                <ChatBot />
+              </main>
+            </ToastProvider>
+          </StoreProvider>
+        </AuthProvider>
+      </Router>
+    </>
   );
 }

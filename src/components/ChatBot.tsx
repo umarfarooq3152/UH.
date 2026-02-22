@@ -134,18 +134,19 @@ const ChatBot: React.FC = () => {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-8 right-8 z-[100] w-14 h-14 bg-white text-obsidian rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all"
+        className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-[100] w-12 h-12 sm:w-14 sm:h-14 bg-white text-obsidian rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all"
+        style={{ bottom: 'max(1.5rem, env(safe-area-inset-bottom, 1.5rem))' }}
       >
-        <MessageSquare size={24} />
+        <MessageSquare size={22} />
       </button>
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            initial={{ opacity: 0, y: 20, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-24 right-8 z-[200] w-[400px] h-[600px] bg-obsidian border border-white/10 shadow-2xl flex flex-col overflow-hidden rounded-2xl"
+            exit={{ opacity: 0, y: 20, scale: 0.97 }}
+            className="fixed inset-0 sm:inset-auto sm:bottom-24 sm:right-8 z-[200] sm:w-[400px] sm:h-[600px] max-h-[100dvh] bg-obsidian border-0 sm:border border-white/10 shadow-2xl flex flex-col overflow-hidden rounded-none sm:rounded-2xl"
           >
             {/* Header */}
             <div className="p-6 border-b border-white/10 flex items-center justify-between bg-white/5">
