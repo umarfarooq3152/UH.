@@ -1,3 +1,12 @@
+export interface Review {
+  id: string;
+  name: string;
+  rating: number;
+  text: string;
+  date: string;
+  status: 'pending' | 'approved';
+}
+
 export interface Product {
   id: string | number;
   name: string;
@@ -7,6 +16,7 @@ export interface Product {
   images?: string[];
   description: string;
   tags: string[];
+  reviews?: Review[];
 }
 
 export interface CartItem {

@@ -317,7 +317,13 @@ const Hero = () => {
           </h1>
 
           <div className="hero-text mt-12 flex flex-col items-center gap-8">
-            <button className="group flex items-center gap-4 text-xs uppercase tracking-widest font-bold border border-white/20 px-8 py-6 md:py-4 rounded-full hover:bg-white hover:text-obsidian transition-all duration-500">
+            <button
+              onClick={() => {
+                const element = document.querySelector('#gallery');
+                if (element) element.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="group flex items-center gap-4 text-xs uppercase tracking-widest font-bold border border-white/20 px-8 py-6 md:py-4 rounded-full hover:bg-white hover:text-obsidian transition-all duration-500"
+            >
               Explore the Collection
               <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
             </button>

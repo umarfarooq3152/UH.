@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { cn } from '../lib/utils';
+import { ReviewSystem } from '../components/ReviewSystem';
 
 const ProductDetails = () => {
     const { id } = useParams();
@@ -128,42 +129,7 @@ const ProductDetails = () => {
                             </div>
                         )}
 
-                        <div className="pt-16 space-y-8">
-                            <h3 className="text-2xl font-serif italic border-b border-white/10 pb-4">Patron Reviews</h3>
-                            <div className="space-y-6">
-                                <div className="bg-white/5 p-6 rounded-2xl flex flex-col gap-4">
-                                    <h4 className="font-bold text-sm tracking-widest">Leave a Review</h4>
-                                    <input type="text" placeholder="Your Name" className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-white/40 text-xs" />
-                                    <textarea placeholder="Write your thoughts..." className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-white/40 h-24 text-xs" />
-                                    <button className="self-end bg-white text-obsidian px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-white/90 transition-all">
-                                        Submit
-                                    </button>
-                                </div>
-
-                                <div className="bg-white/5 p-6 rounded-2xl">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div className="flex gap-1 text-yellow-500 text-sm">★★★★★</div>
-                                        <span className="text-[10px] uppercase tracking-widest text-white/40">Feb 12, 2026</span>
-                                    </div>
-                                    <h4 className="font-bold text-sm tracking-widest">A Masterpiece</h4>
-                                    <p className="text-white/60 text-xs mt-2 leading-relaxed">
-                                        The physical print quality transcends any expectations. The strokes feel alive on the archival paper. An incredible addition to my studio.
-                                    </p>
-                                    <span className="text-[10px] uppercase tracking-widest text-white/40 mt-4 block">— Alexander V.</span>
-                                </div>
-                                <div className="bg-white/5 p-6 rounded-2xl">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div className="flex gap-1 text-yellow-500 text-sm">★★★★★</div>
-                                        <span className="text-[10px] uppercase tracking-widest text-white/40">Jan 28, 2026</span>
-                                    </div>
-                                    <h4 className="font-bold text-sm tracking-widest">Resonant Geometry</h4>
-                                    <p className="text-white/60 text-xs mt-2 leading-relaxed">
-                                        You can feel the dedication in each curve. The digital delivery was seamless, and the high-res files perfectly captured the texture of the original ink.
-                                    </p>
-                                    <span className="text-[10px] uppercase tracking-widest text-white/40 mt-4 block">— Sarah M.</span>
-                                </div>
-                            </div>
-                        </div>
+                        <ReviewSystem product={product} />
                     </div>
                 </div>
             </div>
