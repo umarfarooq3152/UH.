@@ -66,7 +66,7 @@ const WORKFLOW = [
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { setAuthModalOpen, user, isAdmin } = useAuth();
+  const { setAuthModalOpen, user, isAdmin, isGuest } = useAuth();
   const { toggleCart, cart } = useStore();
   const navigate = useNavigate();
   const location = useLocation();
@@ -92,6 +92,14 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleUserIconClick = () => {
+    if (user && !isGuest) {
+      navigate('/profile');
+    } else {
+      setAuthModalOpen(true);
+    }
+  };
+
   return (
     <>
       <nav className="fixed top-8 left-0 w-full z-50 px-6 flex justify-center pointer-events-none">
@@ -108,15 +116,19 @@ const Navbar = () => {
 
           <div className="flex items-center gap-3 md:gap-6">
             {isAdmin && (
-              <Link to="/admin" className="text-white/60 hover:text-white transition-colors p-2" title="Admin Dashboard">
+              <Link to="/admin" className="text-amber-400/70 hover:text-amber-400 transition-colors p-2" title="Admin Dashboard">
                 <Layers size={18} />
               </Link>
             )}
             <button
-              onClick={() => user ? navigate('/profile') : setAuthModalOpen(true)}
-              className="text-white/60 hover:text-white transition-colors p-2 hidden sm:block"
+              onClick={handleUserIconClick}
+              className="text-white/60 hover:text-white transition-colors p-2 hidden sm:block relative"
+              title={user && !isGuest ? 'My Profile' : 'Sign In'}
             >
               <UserIcon size={18} />
+              {isGuest && (
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-white/30 rounded-full" />
+              )}
             </button>
 
             <button
@@ -163,12 +175,17 @@ const Navbar = () => {
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
-                  user ? navigate('/profile') : setAuthModalOpen(true);
+                  handleUserIconClick();
                 }}
                 className="text-left"
               >
-                {user ? 'Profile Component' : 'Identity Verification'}
+                {user && !isGuest ? 'My Profile' : isGuest ? 'Sign In / Register' : 'Identity Verification'}
               </button>
+              {isAdmin && (
+                <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="text-amber-400">
+                  Admin Panel
+                </Link>
+              )}
             </div>
           </motion.div>
         )}
@@ -782,9 +799,8 @@ const Footer = () => {
           <div className="space-y-4">
             <div className="text-[10px] uppercase tracking-widest text-white/30">Connect</div>
             <ul className="space-y-2 text-sm text-white/60">
-              <li><a href="#" className="hover:text-white transition-colors">Instagram</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Twitter</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Behance</a></li>
+              <li><a href="https://www.instagram.com/umars_hands/" className="hover:text-white transition-colors">Instagram</a></li>
+
             </ul>
           </div>
           <div className="space-y-4">

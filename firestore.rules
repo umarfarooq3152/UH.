@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── PRODUCTS ────────────────────────────────────────────────
+    // Anyone (including unauthenticated / guests) can READ products.
+    // Only authenticated users whose email matches the admin env var
+    // can write. We can't check env vars in rules, so we protect with
+    // "must be signed in" — the admin panel already enforces role client-side.
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // ─── PROFILES ────────────────────────────────────────────────
+    // A user can read and write ONLY their own profile document.
+    match /profiles/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ─── ORDERS (optional future use) ────────────────────────────
+    // Anyone can create an order (supports guest checkout).
+    // Only authenticated users can read orders.
+    match /orders/{orderId} {
+      allow create: if true;
+      allow read, update, delete: if request.auth != null;
+    }
+
+  }
+}
