@@ -1,20 +1,45 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Umar's Hands
 
-# Run and deploy your AI Studio app
+A digital gallery for high-fidelity Arabic calligraphy — where reed-pen precision meets modern web craft. Built to display, preserve, and share original calligraphic work with smooth animations and an AI-assisted experience.
 
-This contains everything you need to run your app locally.
+## Features
 
-View your app in AI Studio: https://ai.studio/apps/a16dedf5-44d6-4c92-ba2e-70a272c06321
+- High-resolution calligraphy gallery with frame-by-frame animation sequences
+- Smooth scroll and entrance animations via GSAP and Lenis
+- Gemini AI integration for context and exploration
+- Firebase backend for auth and storage
+- Contact via EmailJS
+- Fully responsive, dark-first design
 
-## Run Locally
+## Tech Stack
 
-**Prerequisites:**  Node.js
+| Layer | Technology |
+|---|---|
+| Framework | React 19, TypeScript, Vite |
+| Styling | Tailwind CSS |
+| Animations | GSAP, Lenis, Motion |
+| AI | Google Gemini (@google/genai) |
+| Backend | Firebase, Express |
+| Storage | better-sqlite3 (local), Firebase Storage |
+| Email | EmailJS |
+| Routing | React Router v7 |
 
+## Run locally
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+**Prerequisites:** Node.js 18+
+
+```bash
+git clone https://github.com/umarfarooq3152/UH..git
+cd UH.
+npm install
+```
+
+Set your API keys in `.env.local`:
+
+```
+GEMINI_API_KEY=your_key_here
+```
+
+```bash
+npm run dev   # http://localhost:3000
+```
